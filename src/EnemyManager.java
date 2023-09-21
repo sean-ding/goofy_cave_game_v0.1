@@ -85,13 +85,20 @@ public class EnemyManager{
         }
         protected int[][] pathfind(int[] start, int[] end, String[][] grid, ArrayList<Enemy> enemies) {
             Pathfinding pathfinding = new Pathfinding();
+            int[][] path;
             boolean[][] occupiedTiles = Hutil.stringMapToBool(grid);
             if (enemies != null) {
                 for (Enemy enemy : enemies) {
                     occupiedTiles[enemy.position[0]][enemy.position[1]] = true;
                 }
             }
-            return Hutil.copy(pathfinding.findPath(start, end, occupiedTiles));
+            path = pathfinding.findPath(start, end, occupiedTiles);
+            if (path != null) {
+                return Hutil.copy(path);
+            }
+            else {
+                return null;
+            }
         }
         protected int[] chooseWanderSpot(String[][] grid) {
             int y;
@@ -143,14 +150,15 @@ public class EnemyManager{
                     return;
                 }
 
-                if (path == null) {
-                    path = pathfind(position, targetPosition, grid, null);
-                }
-
                 if (Hutil.equals(targetPosition, position)) {
                     targetPosition = chooseWanderSpot(grid);
                     path = pathfind(position, targetPosition, grid, null);
                 }
+
+                if (path == null && !Hutil.equals(targetPosition, position)) {
+                    path = pathfind(position, targetPosition, grid, null);
+                }
+
                 if (Vision.hasSightline(player.position[0], player.position[1], position, grid)) {
                     //as long as player is in sight swarmer tells all other swarmers where the player is
                     for (Enemy swarmer : enemyList) {
@@ -165,7 +173,7 @@ public class EnemyManager{
                     path = pathfind(position, targetPosition, grid, enemyList);
                 }
 
-                if (path != null) {
+                if (path != null && path.length > 0) {
                     move(path[path.length - 1], player, grid);
                 }
             }

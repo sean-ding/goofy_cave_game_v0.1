@@ -230,4 +230,12 @@ public class Vision{
 
         return true;
     }
+    /*public static int[][] rayCast(int[] start, int[] end) {
+        int[][] line;
+        int diagonalDistance = Math.max(Math.abs(start[0] - end[0]), Math.abs(start[1] - end[1]));
+        if (diagonalDistance == 0 || diagonalDistance == 1) {
+            return null;
+        }
+
+    }*/
 }
