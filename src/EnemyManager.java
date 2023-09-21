@@ -150,23 +150,23 @@ public class EnemyManager{
                     return;
                 }
 
-                if (Hutil.equals(targetPosition, position)) {
-                    targetPosition = chooseWanderSpot(grid);
-                    path = pathfind(position, targetPosition, grid, null);
-                }
-
-                if (path == null && !Hutil.equals(targetPosition, position)) {
-                    path = pathfind(position, targetPosition, grid, null);
-                }
-
                 if (Vision.hasSightline(player.position[0], player.position[1], position, grid)) {
                     //as long as player is in sight swarmer tells all other swarmers where the player is
                     for (Enemy swarmer : enemyList) {
                         if (swarmer instanceof Swarmer) {
                             ((Swarmer) swarmer).targetPosition = Hutil.copy(player.position);
-                            swarmer.pathfind(position, targetPosition, grid, null);
+                            path = swarmer.pathfind(position, targetPosition, grid, null);
                         }
                     }
+                }
+
+                if (Hutil.equals(targetPosition, position)) {
+                    targetPosition = chooseWanderSpot(grid);
+                    path = pathfind(position, targetPosition, grid, null);
+                }
+
+                if (path == null || path.length == 0) {
+                    path = pathfind(position, targetPosition, grid, null);
                 }
 
                 if (turnsStuck >= 3) {
@@ -299,10 +299,10 @@ public class EnemyManager{
                 path = pathfind(position, targetPosition, grid, null);
 
                 if (turnsStuck >= 3) {
-                    pathfind(position, targetPosition, grid, enemyList);
+                    path = pathfind(position, targetPosition, grid, enemyList);
                 }
 
-                if (path != null) {
+                if (path != null && path.length > 0) {
                     move(path[path.length - 1], player, grid);
                 }
             }

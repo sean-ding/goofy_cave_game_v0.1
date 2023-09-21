@@ -100,6 +100,9 @@ class Main{
         // main game loop
         while(true){
             printGame(renderGame(player, enemyManager.enemyList), player.hp);
+            for (int position : player.position) {
+                System.out.println(position);
+            }
             player.turn(enemyManager);
             for (EnemyManager.Enemy enemy : enemyManager.enemyList) {
                 enemy.turn(player, grid);
