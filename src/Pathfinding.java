@@ -10,9 +10,9 @@ public class Pathfinding {
 
     public int[][] findPath(int[] startPosition, int[] endPosition, boolean[][] grid){
 
-        this.startNode = new Node(startPosition[0], startPosition[1]);
+        startNode = new Node(startPosition[0], startPosition[1]);
         startNode.GToZero();
-        this.endNode = new Node(endPosition[0], endPosition[1]);
+        endNode = new Node(endPosition[0], endPosition[1]);
         startNode.setH(endNode);
 
         nodes = new Node[grid.length][grid.length];
@@ -112,7 +112,7 @@ public class Pathfinding {
         return pathArr;
     }
 
-    class Node{
+    static class Node{
         public int y, x;
         private Node parentNode;
 

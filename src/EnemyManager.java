@@ -91,7 +91,7 @@ public class EnemyManager{
                     occupiedTiles[enemy.position[0]][enemy.position[1]] = true;
                 }
             }
-            return pathfinding.findPath(start, end, occupiedTiles);
+            return Hutil.copy(pathfinding.findPath(start, end, occupiedTiles));
         }
         protected int[] chooseWanderSpot(String[][] grid) {
             int y;
