@@ -3,23 +3,13 @@ public class Hutil {
         double min = Math.min(limit1, limit2);
         double max = Math.max(limit1, limit2);
 
-        if(x >= min && x <= max){
-            return true;
-        }
-        else{
-            return false;
-        }
+        return x >= min && x <= max;
     }
     public static boolean inRange(int x, int limit1, int limit2){
         int min = Math.min(limit1, limit2);
         int max = Math.max(limit1, limit2);
 
-        if(x >= min && x <= max){
-            return true;
-        }
-        else{
-            return false;
-        }
+        return x >= min && x <= max;
     }
 
     public static double[] doubleArr(int[] arr){

@@ -19,14 +19,12 @@ public class Vision{
     private static double[] lineIntersection(double m1, double b1, double m2, double b2){
         double x = (b2-b1) / (m1-m2);
         double y = (m1 * x) + b1;
-        double[] intersectPoint = {y, x};
-        return intersectPoint;
+        return new double[]{y, x};
     }
 
     private static double perpendicularSlope(double m){
         try {
-            double pm = (1 / m) * -1;
-            return pm;
+            return (1 / m) * -1;
         } catch (Exception e) {
             throw new ArithmeticException("Slope is undefined");
         }
@@ -81,23 +79,19 @@ public class Vision{
 
     public static boolean canSee(int y, int x, int[] observerPosition, String[][] grid, int RENDER_DISTANCE){
         // checks if there is a sightline to any of the 4 edges
-        boolean topEdge = false;
-        boolean bottomEdge = false;
-        boolean rightEdge = false;
-        boolean leftEdge = false;
         if (getRayCastHit(y-VISION_BOUNDS, x, observerPosition, grid, RENDER_DISTANCE) == null) {
-            topEdge = true;
+            return true;
         }
         if (getRayCastHit(y+VISION_BOUNDS, x, observerPosition, grid, RENDER_DISTANCE) == null) {
-            bottomEdge = true;
+            return true;
         }
         if (getRayCastHit(y, x+VISION_BOUNDS, observerPosition, grid, RENDER_DISTANCE) == null) {
-            rightEdge = true;
+            return true;
         }
         if (getRayCastHit(y, x-VISION_BOUNDS, observerPosition, grid, RENDER_DISTANCE) == null) {
-            leftEdge = true;
+            return true;
         }
-	    return topEdge || bottomEdge || rightEdge || leftEdge;
+	    return false;
     }
 
     public static int[] getRayCastHit(double spotY, double spotX, int[] observerPosition, String[][] grid, int RENDER_DISTANCE) {
