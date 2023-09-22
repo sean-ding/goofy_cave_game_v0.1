@@ -23,7 +23,7 @@ public class Vision{
         return intersectPoint;
     }
 
-    private static double perpendiculerSlope(double m){
+    private static double perpendicularSlope(double m){
         try {
             double pm = (1 / m) * -1;
             return pm;
@@ -81,20 +81,31 @@ public class Vision{
 
     public static boolean canSee(int y, int x, int[] observerPosition, String[][] grid, int RENDER_DISTANCE){
         // checks if there is a sightline to any of the 4 edges
-        boolean topEdge = hasSightline(y-VISION_BOUNDS, x, observerPosition, grid, RENDER_DISTANCE);
-        boolean bottomEdge = hasSightline(y+VISION_BOUNDS, x, observerPosition, grid, RENDER_DISTANCE);
-        boolean rightEdge = hasSightline(y, x+VISION_BOUNDS, observerPosition, grid, RENDER_DISTANCE);
-        boolean leftEdge = hasSightline(y, x-VISION_BOUNDS, observerPosition, grid, RENDER_DISTANCE);
-        if(topEdge || bottomEdge || rightEdge || leftEdge){
-            return true;
+        boolean topEdge = false;
+        boolean bottomEdge = false;
+        boolean rightEdge = false;
+        boolean leftEdge = false;
+        if (getRayCastHit(y-VISION_BOUNDS, x, observerPosition, grid, RENDER_DISTANCE) == null) {
+            topEdge = true;
         }
-        else{
-            return false;
+        if (getRayCastHit(y+VISION_BOUNDS, x, observerPosition, grid, RENDER_DISTANCE) == null) {
+            bottomEdge = true;
         }
+        if (getRayCastHit(y, x+VISION_BOUNDS, observerPosition, grid, RENDER_DISTANCE) == null) {
+            rightEdge = true;
+        }
+        if (getRayCastHit(y, x-VISION_BOUNDS, observerPosition, grid, RENDER_DISTANCE) == null) {
+            leftEdge = true;
+        }
+	    return topEdge || bottomEdge || rightEdge || leftEdge;
     }
 
-    public static boolean hasSightline(double spotY, double spotX, int[] observerPosition, String[][] grid, int RENDER_DISTANCE){
+    public static int[] getRayCastHit(double spotY, double spotX, int[] observerPosition, String[][] grid, int RENDER_DISTANCE) {
         double[] intersect = {};
+        int castGridLength = RENDER_DISTANCE * 2 + 1;
+        if (RENDER_DISTANCE == -1) {
+            castGridLength = grid.length;
+        }
 
         // works based on grade 9 analytical geometry
         // m is slope and b is y-intercept
@@ -105,35 +116,39 @@ public class Vision{
             double m = slope(spotY, spotX, observerPosition[0], observerPosition[1]);
             double b = yInt(spotY, spotX, m);
             // check for walls within camera
-            for (int renderY = 0; renderY < RENDER_DISTANCE*2+1; renderY++) {
-                for (int renderX = 0; renderX < RENDER_DISTANCE*2+1; renderX++) {
-                    // convert relative position to grid. same as Main.toGrid()
-                    int wallY = (observerPosition[0] - RENDER_DISTANCE) + renderY;
-                    int wallX = (observerPosition[1] - RENDER_DISTANCE) + renderX;
+            for (int wallY = 0; wallY < castGridLength; wallY++) {
+                for (int wallX = 0; wallX < castGridLength; wallX++) {
+                    // convert relative position to grid if cast distance is specified. same as Main.toGrid()
+                    int gridWallY = (observerPosition[0] - RENDER_DISTANCE) + wallY;
+                    int gridWallX = (observerPosition[1] - RENDER_DISTANCE) + wallX;
+                    if (RENDER_DISTANCE == -1) {
+                        gridWallX = wallX;
+                        gridWallY = wallY;
+                    }
 
-                    boolean inbetweenObserverAndSpot = Hutil.inRange(wallY, spotY, observerPosition[0]) && Hutil.inRange(wallX, spotX, observerPosition[1]);
-                    if(inbetweenObserverAndSpot){
-                        if(grid[wallY][wallX] == "X"){
-                            int[] blocker = {wallY, wallX}; // position of wall that MAY be blocking sightline
+                   // checks if wall is between observer and target (ignored if it won't be in the way)
+                    if(Hutil.inRange(gridWallY, spotY, observerPosition[0]) && Hutil.inRange(gridWallX, spotX, observerPosition[1])) {
+                        if(grid[gridWallY][gridWallX] == "X"){
+                            int[] blocker = {gridWallY, gridWallX}; // position of wall that could block sightline
                         
                             if(m != 0){
 
-                                // line that originating from wall running perpidicular to sightline
-                                double m2 = perpendiculerSlope(m);
-                                double b2 = yInt(wallY, wallX, m2);
+                                // line originating from wall running perpendicular to sightline
+                                double m2 = perpendicularSlope(m);
+                                double b2 = yInt(gridWallY, gridWallX, m2);
 
                                 intersect = lineIntersection(m, b, m2, b2); // intersection of sightline and line from wall to sightline
 
                                 if(blocked(intersect, blocker, spotY, spotX)){
-                                    return false;
+                                    return blocker;
                                 }
 
                             }
                             else{
-                                intersect = new double[]{spotY, wallX};
+                                intersect = new double[]{spotY, gridWallX};
 
                                 if(blocked(intersect, blocker, spotY, spotX)){
-                                    return false;
+                                    return blocker;
                                 }
                             }
                         }
@@ -143,92 +158,32 @@ public class Vision{
 
         }
         else{
-            // check for walls within camera
-            for (int renderY = 0; renderY < RENDER_DISTANCE*2+1; renderY++) {
-                for (int renderX = 0; renderX < RENDER_DISTANCE*2+1; renderX++) {
-                    // convert relative position to grid. same as Main.toGrid()
-                    int wallY = (observerPosition[0] - RENDER_DISTANCE) + renderY;
-                    int wallX = (observerPosition[1] - RENDER_DISTANCE) + renderX;
+            // check for walls within camera (for undefined slope, i.e. vertical line)
+            for (int wallY = 0; wallY < castGridLength; wallY++) {
+                for (int wallX = 0; wallX < castGridLength; wallX++) {
+                    // convert relative position to grid if cast distance is specified. same as Main.toGrid()
+                    int gridWallY = (observerPosition[0] - RENDER_DISTANCE) + wallY;
+                    int gridWallX = (observerPosition[1] - RENDER_DISTANCE) + wallX;
+                    if (RENDER_DISTANCE == -1) {
+                        gridWallX = wallX;
+                        gridWallY = wallY;
+                    }
 
-                    boolean inbetweenObserverAndSpot = Hutil.inRange(wallY, spotY, observerPosition[0]) && Hutil.inRange(wallX, spotX, observerPosition[1]);
-                    if(inbetweenObserverAndSpot){
+                    if(Hutil.inRange(gridWallY, spotY, observerPosition[0]) && Hutil.inRange(gridWallX, spotX, observerPosition[1])) {
 
-                        if(grid[wallY][wallX] == "X"){
-                            int[] blocker = {wallY, wallX}; // position of wall that MAY be blocking sightline
-                            intersect = new double[]{wallY, spotX}; // intersection of sightline and line from wall to sightline
+                        if(grid[gridWallY][gridWallX] == "X"){
+                            int[] blocker = {gridWallY, gridWallX}; // position of wall that could block sightline
+                            intersect = new double[]{gridWallY, spotX}; // intersection of sightline and line from wall to sightline
 
                             if(blocked(intersect, blocker, spotY, spotX)){
-                                return false;
-                            }
-
-                        }
-                    }
-                }
-            }
-        }
-
-        return true;
-    }
-
-    public static boolean hasSightline(int spotY, int spotX, int[] observerPosition, String[][] grid){
-        double[] intersect = {};
-
-        boolean m_isUndefined = (spotX - observerPosition[1] == 0);
-        if(!m_isUndefined){
-
-            double m = slope(spotY, spotX, observerPosition[0], observerPosition[1]);
-            double b = yInt(spotY, spotX, m);
-            for (int wallY = 0; wallY < grid.length; wallY++) {
-                for (int wallX = 0; wallX < grid.length; wallX++) {
-                    if(Hutil.inRange(wallY, spotY, observerPosition[0]) && Hutil.inRange(wallX, spotX, observerPosition[1])){
-                        if(grid[wallY][wallX] == "X"){
-                            int[] blocker = {wallY, wallX};
-                        
-                            if(m != 0){
-
-                                double m2 = perpendiculerSlope(m);
-                                double b2 = yInt(wallY, wallX, m2);
-
-                                intersect = lineIntersection(m, b, m2, b2);
-
-                                if(blocked(intersect, blocker, spotY, spotX)){
-                                    return false;
-                                }
-
-                            }
-                            else{
-                                intersect = new double[]{spotY, wallX};
-
-                                if(blocked(intersect, blocker, spotY, spotX)){
-                                    return false;
-                                }
+                                return blocker;
                             }
                         }
                     }
                 }
             }
-
         }
-        else{
-            for (int wallY = 0; wallY < grid.length; wallY++) {
-                for (int wallX = 0; wallX < grid.length; wallX++) {
-                    if(Hutil.inRange(wallY, spotY, observerPosition[0]) && Hutil.inRange(wallX, spotX, observerPosition[1])){
-
-                        if(grid[wallY][wallX] == "X"){
-                            int[] blocker = {wallY, wallX};
-                            intersect = new double[]{wallY, spotX};
-
-                            if(blocked(intersect, blocker, spotY, spotX)){
-                                return false;
-                            }
-
-                        }
-                    }
-                }
-            }
-        }
-
-        return true;
+        return null;
     }
     /*public static int[][] rayCast(int[] start, int[] end) {
         int[][] line;

@@ -150,7 +150,7 @@ public class EnemyManager{
                     return;
                 }
 
-                if (Vision.hasSightline(player.position[0], player.position[1], position, grid)) {
+                if (Vision.getRayCastHit(player.position[0], player.position[1], position, grid, -1) == null) {
                     //as long as player is in sight swarmer tells all other swarmers where the player is
                     for (Enemy swarmer : enemyList) {
                         if (swarmer instanceof Swarmer) {
@@ -229,7 +229,7 @@ public class EnemyManager{
                     return;
                 }
 
-                if (Vision.hasSightline(player.position[0], player.position[1], position, grid)) {
+                if (Vision.getRayCastHit(player.position[0], player.position[1], position, grid, -1) == null) {
                     //as long as player is in sight swarmer nest spawns swarmers until it runs out
                     if (swarmersLeft > 0) {
                         spawnSwarmer(grid);
@@ -273,7 +273,7 @@ public class EnemyManager{
             this.hp = maxHealth;
             this.speed = 100;
             this.damage = 100;
-            this.spawnWeight = 0.01;
+            this.spawnWeight = 0.001;
             turnIndex = 0;
             turnsStuck = 0;
         }

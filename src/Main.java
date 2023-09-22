@@ -4,7 +4,7 @@ class Main{
     public static final Scanner input = new Scanner(System.in);
     public static String[][] grid;
     public static String[][] currentRender;
-    public static final int RENDER_DISTANCE = 30;
+    public static final int RENDER_DISTANCE = 10;
     public static final int TURN_SPEED = 10;
     
     public static void main(String[] args) {
@@ -60,9 +60,9 @@ class Main{
         int numberOfEnemies;
         while(true){
             try {
-                System.out.print("World size (400 recommended): ");
+                System.out.print("World size (200 recommended): ");
                 size = Integer.parseInt(input.nextLine());
-                System.out.print("Minimum cave area (50000 recommended): ");
+                System.out.print("Minimum cave area (10000 recommended): ");
                 area = Integer.parseInt(input.nextLine());
                 System.out.println("Enemies: ");
                 numberOfEnemies = Integer.parseInt(input.nextLine());
@@ -100,9 +100,6 @@ class Main{
         // main game loop
         while(true){
             printGame(renderGame(player, enemyManager.enemyList), player.hp);
-            for (int position : player.position) {
-                System.out.println(position);
-            }
             player.turn(enemyManager);
             for (EnemyManager.Enemy enemy : enemyManager.enemyList) {
                 enemy.turn(player, grid);
